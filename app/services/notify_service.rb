@@ -177,6 +177,7 @@ class NotifyService < BaseService
     return if dismiss?
 
     @notification.filtered = filter?
+    @notification.group_key = notification_group_key
     @notification.save!
 
     # It's possible the underlying activity has been deleted
@@ -195,6 +196,12 @@ class NotifyService < BaseService
   end
 
   private
+
+  def notification_group_key
+    return nil if @notification.filtered || %i(favourite reblog).exclude?(@notification.type)
+
+    "#{@notification.type}-#{@notification.target_status.id}-#{@notification.activity.created_at.to_date}"
+  end
 
   def dismiss?
     DismissCondition.new(@notification).dismiss?
