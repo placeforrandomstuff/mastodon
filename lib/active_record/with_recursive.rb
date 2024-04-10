@@ -9,7 +9,7 @@ module ActiveRecord
   module QueryMethodsExtensions
     def with_recursive(as, anchor, recursive)
       @is_recursive = true
-      common_table = Arel.sql(anchor.arel.union(:all, recursive.arel).to_sql)
+      common_table = anchor.arel.union(:all, recursive.arel)
       from(as).with(as => common_table)
     end
 
@@ -26,6 +26,20 @@ module ActiveRecord
 
       # Was:  arel.with(with_statements)
       @is_recursive ? arel.with(:recursive, with_statements) : arel.with(with_statements)
+    end
+
+    def build_with_value_from_hash(hash)
+      hash.map do |name, value|
+        expression =
+          case value
+          when Arel::Nodes::SqlLiteral then Arel::Nodes::Grouping.new(value)
+          when ActiveRecord::Relation then value.arel
+          when Arel::SelectManager, Arel::Nodes::UnionAll then value # Added Arel::Nodes::UnionAll
+          else
+            raise ArgumentError, "Unsupported argument type: `#{value}` #{value.class}"
+          end
+        Arel::Nodes::TableAlias.new(expression, name)
+      end
     end
   end
 end
