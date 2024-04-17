@@ -9,8 +9,7 @@ module ActiveRecord
   module QueryMethodsExtensions
     def with_recursive(as, anchor, recursive)
       @is_recursive = true
-      common_table = anchor.arel.union(:all, recursive.arel)
-      from(as).with(as => common_table)
+      with(as => anchor.arel.union(:all, recursive.arel))
     end
 
     private

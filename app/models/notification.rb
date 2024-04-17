@@ -153,6 +153,7 @@ class Notification < ApplicationRecord
             .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
             .limit(1)
         )
+        .from('grouped_notifications AS notifications')
         .order(id: :desc)
         .limit(limit)
     end
@@ -178,6 +179,7 @@ class Notification < ApplicationRecord
             .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
             .limit(1)
         )
+        .from('grouped_notifications AS notifications')
         .order(id: :asc)
         .limit(limit)
     end
