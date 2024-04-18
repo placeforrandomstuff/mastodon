@@ -142,16 +142,17 @@ class Notification < ApplicationRecord
 
       unscoped
         .with_recursive(
-          'grouped_notifications',
-          query
-            .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")
-            .limit(1),
-          query
-            .joins('CROSS JOIN grouped_notifications')
-            .where('notifications.id < grouped_notifications.id')
-            .where.not("COALESCE(notifications.group_key, 'ungrouped-' || notifications.id) = ANY(grouped_notifications.groups)")
-            .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
-            .limit(1)
+          grouped_notifications: [
+            query
+              .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")
+              .limit(1),
+            query
+              .joins('CROSS JOIN grouped_notifications')
+              .where('notifications.id < grouped_notifications.id')
+              .where.not("COALESCE(notifications.group_key, 'ungrouped-' || notifications.id) = ANY(grouped_notifications.groups)")
+              .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
+              .limit(1),
+          ]
         )
         .from('grouped_notifications AS notifications')
         .order(id: :desc)
@@ -168,16 +169,17 @@ class Notification < ApplicationRecord
 
       unscoped
         .with_recursive(
-          'grouped_notifications',
-          query
-            .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")
-            .limit(1),
-          query
-            .joins('CROSS JOIN grouped_notifications')
-            .where('notifications.id > grouped_notifications.id')
-            .where.not("COALESCE(notifications.group_key, 'ungrouped-' || notifications.id) = ANY(grouped_notifications.groups)")
-            .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
-            .limit(1)
+          grouped_notifications: [
+            query
+              .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")
+              .limit(1),
+            query
+              .joins('CROSS JOIN grouped_notifications')
+              .where('notifications.id > grouped_notifications.id')
+              .where.not("COALESCE(notifications.group_key, 'ungrouped-' || notifications.id) = ANY(grouped_notifications.groups)")
+              .select('notifications.*', "array_append(grouped_notifications.groups, COALESCE(notifications.group_key, 'ungrouped-' || notifications.id))")
+              .limit(1),
+          ]
         )
         .from('grouped_notifications AS notifications')
         .order(id: :asc)

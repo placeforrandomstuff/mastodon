@@ -7,9 +7,9 @@
 
 module ActiveRecord
   module QueryMethodsExtensions
-    def with_recursive(as, anchor, recursive)
+    def with_recursive(*args)
       @is_recursive = true
-      with(as => anchor.arel.union(:all, recursive.arel))
+      with(*args)
     end
 
     private
@@ -29,15 +29,18 @@ module ActiveRecord
 
     def build_with_value_from_hash(hash)
       hash.map do |name, value|
-        expression =
-          case value
-          when Arel::Nodes::SqlLiteral then Arel::Nodes::Grouping.new(value)
-          when ActiveRecord::Relation then value.arel
-          when Arel::SelectManager, Arel::Nodes::UnionAll then value # Added Arel::Nodes::UnionAll
-          else
-            raise ArgumentError, "Unsupported argument type: `#{value}` #{value.class}"
-          end
-        Arel::Nodes::TableAlias.new(expression, name)
+        Arel::Nodes::TableAlias.new(build_with_expression_from_value(value), name)
+      end
+    end
+
+    def build_with_expression_from_value(value)
+      case value
+      when Arel::Nodes::SqlLiteral then Arel::Nodes::Grouping.new(value)
+      when ActiveRecord::Relation then value.arel
+      when Arel::SelectManager then value
+      when Array then value.map { |e| build_with_expression_from_value(e) }.reduce { |result, value| Arel::Nodes::UnionAll.new(result, value) }
+      else
+        raise ArgumentError, "Unsupported argument type: `#{value}` #{value.class}"
       end
     end
   end
