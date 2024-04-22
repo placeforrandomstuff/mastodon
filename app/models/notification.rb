@@ -141,7 +141,7 @@ class Notification < ApplicationRecord
       query = query.where(id: (since_id + 1)...) if since_id.present?
 
       unscoped
-        .with.recursive(
+        .with_recursive(
           grouped_notifications: [
             query
               .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")
@@ -168,7 +168,7 @@ class Notification < ApplicationRecord
       query = query.where(id: ...max_id) if max_id.present?
 
       unscoped
-        .with.recursive(
+        .with_recursive(
           grouped_notifications: [
             query
               .select('notifications.*', "ARRAY[COALESCE(notifications.group_key, 'ungrouped-' || notifications.id)] groups")

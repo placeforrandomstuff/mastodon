@@ -11,36 +11,17 @@
 
 module ActiveRecord
   module QueryMethodsExtensions
-    class WithChain
-      def initialize(scope) # :nodoc:
-        @scope = scope
-      end
-
-      def recursive(*args)
-        @scope.with_values += args
-        @scope.is_recursive = true
-        @scope
-      end
+    def with_recursive(*args)
+      @with_is_recursive = true
+      check_if_method_has_arguments!(__callee__, args)
+      spawn.with_recursive!(*args)
     end
 
-    # TODO: This is akin to how `Relation::VALUE_METHODS` are defined,
-    # but this does not neatly fit into one of the existing categories.
-    # Maybe we should make a full-fledged `WithClause`
-    def is_recursive # rubocop:disable Naming/PredicateName
-      @values.fetch(:is_recursive, false)
-    end
-
-    def is_recursive=(value)
-      assert_mutability!
-      @values[:is_recursive] = value
-    end
-
-    def with(*args)
-      if args.empty?
-        WithChain.new(spawn)
-      else
-        spawn.with!(*args)
-      end
+    # Like #with_recursive but modifies the relation in place.
+    def with_recursive!(*args) # :nodoc:
+      self.with_values += args
+      @with_is_recursive = true
+      self
     end
 
     private
@@ -55,7 +36,7 @@ module ActiveRecord
       end
 
       # Was:  arel.with(with_statements)
-      is_recursive ? arel.with(:recursive, with_statements) : arel.with(with_statements)
+      @with_is_recursive ? arel.with(:recursive, with_statements) : arel.with(with_statements)
     end
 
     def build_with_value_from_hash(hash)
