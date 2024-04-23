@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_10_095755) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_23_123807) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -725,6 +725,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_10_095755) do
     t.string "type"
     t.boolean "filtered", default: false, null: false
     t.string "group_key"
+    t.index ["account_id", "group_key"], name: "index_notifications_on_account_id_and_group_key", where: "(group_key IS NOT NULL)"
     t.index ["account_id", "id", "type"], name: "index_notifications_on_account_id_and_id_and_type", order: { id: :desc }
     t.index ["account_id", "id", "type"], name: "index_notifications_on_filtered", order: { id: :desc }, where: "(filtered = false)"
     t.index ["activity_id", "activity_type"], name: "index_notifications_on_activity_id_and_activity_type"
