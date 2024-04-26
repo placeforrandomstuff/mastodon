@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class REST::NotificationGroupSerializer < ActiveModel::Serializer
-  attributes :group_key, :notifications_count, :sample_accounts, :type, :group_key
+  attributes :group_key, :notifications_count, :type
 
-  has_many :sample_accounts, serialized: REST::AccountSerializer
+  has_many :sample_accounts, serializer: REST::AccountSerializer
   belongs_to :target_status, key: :status, if: :status_type?, serializer: REST::StatusSerializer
   belongs_to :report, if: :report_type?, serializer: REST::ReportSerializer
   belongs_to :account_relationship_severance_event, key: :event, if: :relationship_severance_event?, serializer: REST::AccountRelationshipSeveranceEventSerializer
